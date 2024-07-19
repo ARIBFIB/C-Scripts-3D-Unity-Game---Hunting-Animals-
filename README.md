@@ -1,8 +1,9 @@
+# Unity C-Sharp Scripts
 ![image](https://github.com/user-attachments/assets/9b4ee461-e6b8-4458-98ff-7a1dfbfeb775)# C-Scripts-3D-Unity-Game---Hunting-Animals-
 Here I will provide you the all scripts which is used in unity game, developers can copy and paste in your tutrotials
 
-![image](https://github.com/user-attachments/assets/5433e343-650c-410a-961c-ed14c1bf2f7b)
-````
+# Player Movement 3D
+```
 C-Sharp Scripts
 using System.Collections;
 using System.Collections.Generic;
@@ -37,4 +38,4 @@ public class PlayerMovement : MonoBehaviour
 
     }
 }
-````
+```
