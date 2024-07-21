@@ -187,9 +187,9 @@ public class PlayerMovement : MonoBehaviour
 ```
 
 
-#Add Foot Step Audio
-##Adding the foot setp when the player move
-##Updated Code
+# Add Foot Step Audio
+## Adding the foot setp when the player move
+## Updated Code
 ```
 using System;
 using System.Collections;
