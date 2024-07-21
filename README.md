@@ -320,8 +320,8 @@ public class CameraController : MonoBehaviour
     }
     void Update()
     {
-        float mouseX = Input.GetAxis("Mouse X") * sensitivity;
-        float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
+        float mouseX = Input.GetAxis("Mouse Y") * sensitivity;
+        float mouseY = Input.GetAxis("Mouse X") * sensitivity;
 
         rotationX -= mouseX;
         rotationY += mouseY;
