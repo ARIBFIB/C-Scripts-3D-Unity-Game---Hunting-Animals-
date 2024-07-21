@@ -188,7 +188,7 @@ public class PlayerMovement : MonoBehaviour
 
 
 # Add Foot Step Audio
-## Adding the foot setp when the player move
+## Adding the foot step audio when the player move
 ## Updated Code
 ```
 using System;
@@ -293,4 +293,48 @@ public class PlayerMovement : MonoBehaviour
     
 }
 ```
+# Add Camera Controller
+## Adding the Camera Controller when the player move the mouse the camera also move
+## Updated Code
+```
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
+public class CameraController : MonoBehaviour
+{
+    public Transform playerTransform;
+    public float sensitivity = 2f;
+    public float minXAngle = -30f;
+    public float maxXAngle = 30f;
+    public float minYAngle = -360f;
+    public float maxYAngle = 360f;
+    public float rotationX = 0f;
+    public float rotationY = 0f;
+    public float smoothSpeed = 10f;
+
+    void Start()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+    void Update()
+    {
+        float mouseX = Input.GetAxis("Mouse X") * sensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
+
+        rotationX -= mouseX;
+        rotationY += mouseY;
+
+        rotationX = Mathf.Clamp(rotationX, minXAngle, maxXAngle);
+        rotationY = Mathf.Clamp(rotationY, minYAngle, maxYAngle);
+
+        Quaternion targetRotation = Quaternion.Euler(rotationX, rotationY, 0);
+
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, smoothSpeed * Time.deltaTime);
+        
+
+
+    }
+}
+```
