@@ -474,3 +474,109 @@ public class ShootingController : MonoBehaviour
 }
 
 ```
+# Animator set and Reset the animation
+```
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ShootingController : MonoBehaviour
+{
+    public Animator animator;
+    public Transform firePoint;
+    public float fireRate = 0.1f;
+    public float fireRange = 10f;
+    private float nextFireTime = 0f;
+
+    public bool isAuto = false;
+    public int maxAmmo = 30;
+
+    private int currentAmmo; //when the ammo is full or your current ammo 
+
+    public float reloadTime = 1.5f; //the time when pressing the R button the reloading time is 1.5seconds
+
+    private bool isReloading = false; //by default the reloading the gun is not active
+
+    void Start()
+    {
+        currentAmmo = maxAmmo; //start mathods update the current ammo 
+    }
+
+    void Update()
+    {
+        if(isReloading) // when reloading occur its retrun to reloading function will ture
+            return;
+        if(isAuto == true) // Press left click to fire 
+        {
+            if(Input.GetButton("Fire1") && Time.time >= nextFireTime)
+            {
+                nextFireTime = Time.time + 1f / fireRate;
+                Shoot();
+            }
+            else
+            {
+                animator.SetBool("shoot", false);
+            }
+        }
+        else
+        { // to do fire same functonality by pressing the button fire active and shoot function call
+            if(Input.GetButtonDown("Fire1") && Time.time >= nextFireTime)
+            {
+                nextFireTime = Time.time + 1f / fireRate;
+                Shoot();
+            }
+            else
+            {
+                animator.SetBool("shoot", false);
+            }
+        }
+        //Mannual Reload by pressing R button
+        if(Input.GetKeyDown(KeyCode.R) && currentAmmo < maxAmmo)
+        {
+            Reload();
+        }
+    }
+
+    private void Shoot(){
+        // its a range where the fire can exist , can be change later to increase and decrease
+        if(currentAmmo > 0)
+        {
+            RaycastHit hit;
+            if(Physics.Raycast(firePoint.position, firePoint.forward, out hit, fireRange))
+            {
+                Debug.Log(hit.transform.name);
+                //apply damage to animal
+            }
+
+            animator.SetBool("shoot", true);
+            currentAmmo--; //decrement of ammo
+        }
+        else
+        {
+            //reload function call
+            Reload();
+        }
+    }
+    private void Reload()
+    {
+        if(!isReloading && currentAmmo < maxAmmo)
+        {
+            //reload anim
+            animator.SetTrigger("Reload");
+
+            isReloading = true;
+            //play reload sound
+            Invoke("FinishReloading", reloadTime);
+
+        }
+    }
+    private void FinishReloading()
+    {
+        currentAmmo = maxAmmo;
+        isReloading = false;
+        //reset reload animation
+        animator.ResetTrigger("Reload");
+    }
+}
+
+```
