@@ -515,7 +515,7 @@ public class ShootingController : MonoBehaviour
             }
             else
             {
-                animator.SetBool("shoot", false);
+                animator.SetBool("Shoot", false);
             }
         }
         else
@@ -527,7 +527,7 @@ public class ShootingController : MonoBehaviour
             }
             else
             {
-                animator.SetBool("shoot", false);
+                animator.SetBool("Shoot", false);
             }
         }
         //Mannual Reload by pressing R button
@@ -548,7 +548,7 @@ public class ShootingController : MonoBehaviour
                 //apply damage to animal
             }
 
-            animator.SetBool("shoot", true);
+            animator.SetBool("Shoot", true);
             currentAmmo--; //decrement of ammo
         }
         else
