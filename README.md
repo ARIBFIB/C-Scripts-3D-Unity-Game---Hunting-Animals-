@@ -681,3 +681,227 @@ namespace BLINK
 }
 
 ```
+
+# NavMesh Ai Not exatcly this script added in project
+```
+
+using UnityEngine;
+using UnityEngine.AI;
+
+public class EnemyAiTutorial : MonoBehaviour
+{
+    public NavMeshAgent agent;
+
+    public Transform player;
+
+    public LayerMask whatIsGround, whatIsPlayer;
+
+    public float health;
+
+    //Patroling
+    public Vector3 walkPoint;
+    bool walkPointSet;
+    public float walkPointRange;
+
+    //Attacking
+    public float timeBetweenAttacks;
+    bool alreadyAttacked;
+    public GameObject projectile;
+
+    //States
+    public float sightRange, attackRange;
+    public bool playerInSightRange, playerInAttackRange;
+
+    private void Awake()
+    {
+        player = GameObject.Find("PlayerObj").transform;
+        agent = GetComponent<NavMeshAgent>();
+    }
+
+    private void Update()
+    {
+        //Check for sight and attack range
+        playerInSightRange = Physics.CheckSphere(transform.position, sightRange, whatIsPlayer);
+        playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, whatIsPlayer);
+
+        if (!playerInSightRange && !playerInAttackRange) Patroling();
+        if (playerInSightRange && !playerInAttackRange) ChasePlayer();
+        if (playerInAttackRange && playerInSightRange) AttackPlayer();
+    }
+
+    private void Patroling()
+    {
+        if (!walkPointSet) SearchWalkPoint();
+
+        if (walkPointSet)
+            agent.SetDestination(walkPoint);
+
+        Vector3 distanceToWalkPoint = transform.position - walkPoint;
+
+        //Walkpoint reached
+        if (distanceToWalkPoint.magnitude < 1f)
+            walkPointSet = false;
+    }
+    private void SearchWalkPoint()
+    {
+        //Calculate random point in range
+        float randomZ = Random.Range(-walkPointRange, walkPointRange);
+        float randomX = Random.Range(-walkPointRange, walkPointRange);
+
+        walkPoint = new Vector3(transform.position.x + randomX, transform.position.y, transform.position.z + randomZ);
+
+        if (Physics.Raycast(walkPoint, -transform.up, 2f, whatIsGround))
+            walkPointSet = true;
+    }
+
+    private void ChasePlayer()
+    {
+        agent.SetDestination(player.position);
+    }
+
+    private void AttackPlayer()
+    {
+        //Make sure enemy doesn't move
+        agent.SetDestination(transform.position);
+
+        transform.LookAt(player);
+
+        if (!alreadyAttacked)
+        {
+            ///Attack code here
+            Rigidbody rb = Instantiate(projectile, transform.position, Quaternion.identity).GetComponent<Rigidbody>();
+            rb.AddForce(transform.forward * 32f, ForceMode.Impulse);
+            rb.AddForce(transform.up * 8f, ForceMode.Impulse);
+            ///End of attack code
+
+            alreadyAttacked = true;
+            Invoke(nameof(ResetAttack), timeBetweenAttacks);
+        }
+    }
+    private void ResetAttack()
+    {
+        alreadyAttacked = false;
+    }
+
+    public void TakeDamage(int damage)
+    {
+        health -= damage;
+
+        if (health <= 0) Invoke(nameof(DestroyEnemy), 0.5f);
+    }
+    private void DestroyEnemy()
+    {
+        Destroy(gameObject);
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, sightRange);
+    }
+}
+
+```
+Animation Demos, Mot this script added in the project
+```
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace BLINK
+{
+    public class AnimationDemo : MonoBehaviour
+    {
+
+        public enum AnimationType
+        {
+            Trigger,
+            Bool
+        }
+
+        [System.Serializable]
+        public class AnimationEntry
+        {
+            public string animationName;
+            public AnimationType type;
+        }
+
+        public List<AnimationEntry> entries = new List<AnimationEntry>();
+
+        public List<Animator> animators = new List<Animator>();
+
+        public int entryIndex;
+        public Text animationNameText;
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                NextAnimation();
+            }
+
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                ReplayAnimation();
+            }
+        }
+
+        public void NextAnimation()
+        {
+            entryIndex++;
+            if (entries.Count - 1 < entryIndex) entryIndex = 0;
+            animationNameText.text = entries[entryIndex].animationName;
+            PlayAnimation();
+        }
+
+        public void PreviousAnimation()
+        {
+            entryIndex--;
+            if (entryIndex < 0) entryIndex = entries.Count - 1;
+            animationNameText.text = entries[entryIndex].animationName;
+            PlayAnimation();
+        }
+
+        public void ReplayAnimation()
+        {
+            PlayAnimation();
+        }
+
+        private void ResetAllBool()
+        {
+            foreach (var entry in entries)
+            {
+                if (entry.type != AnimationType.Bool) continue;
+                foreach (var animator in animators)
+                {
+                    animator.SetBool(entry.animationName, false);
+                }
+            }
+        }
+
+        private void PlayAnimation()
+        {
+            ResetAllBool();
+
+            if (entries[entryIndex].type == AnimationType.Bool)
+            {
+                foreach (var animator in animators)
+                {
+                    animator.SetBool(entries[entryIndex].animationName, true);
+                }
+            }
+            else
+            {
+                foreach (var animator in animators)
+                {
+                    animator.SetTrigger(entries[entryIndex].animationName);
+                }
+            }
+        }
+    }
+}
+
+```
+hello my name is abdul rehman and i am the developer of this unity game project so i wanted to say i have to complete this project as soon as possible that is my mission so if you want to do any commnet related to me so you can do by direct message me or by via email. So what you are waiting for go and just do it, duw na pia tu phir kia jiya , life is too short so dont waste on irrelent thing! got my point! .Manta hu phir! :) Manna pahra ga. just joking
