@@ -1256,4 +1256,209 @@ public class AnimalsAi : MonoBehaviour
 }
 
 ```
+# Update Script
+# Adding the Animator and Animation - Script is Working and Genune
+```
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.AI;
+
+public class AnimalsAi : MonoBehaviour
+{
+    [Header("Bear Attributes")]
+    public float health;
+
+    [Header("Patrolling")]
+
+    public Transform[] waypoints; 
+    
+    public float waitTime = 2f;
+    
+
+    private int currentWaypointIndex = 0;
+
+    private bool isWaiting = false;
+
+    private bool walkPointSet = false;
+
+
+    [Header("Chasing and Attacking")]
+
+    public Transform player; // Assign the player Transform in the Inspector
+    public float sightRange, attackRange;
+
+    public LayerMask whatIsGround, whatIsPlayer;
+    public float timeBetweenAttacks;
+
+
+    private bool alreadyAttacked = false;
+
+
+
+    public NavMeshAgent agent;
+    public Animator animator;
+
+    public float chaseSpeed = 8f; // add this in video i will tell you i will add this later on but just 
+    // write above variable
+
+    
+
+
+    private bool playerInSightRange, playerInAttackRange;
+
+
+    private void Awake()
+    {
+        // Try to find the player object automatically if not assigned in the Inspector
+        if (player == null)
+        {
+            GameObject playerObj = GameObject.Find("Player");
+            if (playerObj != null)
+            {
+                player = playerObj.transform;
+            }
+            else
+            {
+                Debug.LogError("Player object not found. Please assign the player Transform in the Inspector.");
+            }
+        }
+
+        agent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();
+    }
+
+
+
+    private void Start()
+    {
+        MoveToNextWaypoint();
+    }
+
+
+    private void Update()
+    {
+        // Check for sight and attack range
+        playerInSightRange = Physics.CheckSphere(transform.position, sightRange, whatIsPlayer);
+        playerInAttackRange = Physics.CheckSphere(transform.position, attackRange, whatIsPlayer);
+
+        if (!playerInSightRange && !playerInAttackRange)
+        {
+            Patroling();
+        }
+        if (playerInSightRange && !playerInAttackRange)
+        {
+            ChasePlayer();
+        }
+        if (playerInAttackRange && playerInSightRange)
+        {
+            AttackPlayer();
+        }
+
+        if (!isWaiting && agent.remainingDistance < agent.stoppingDistance)
+        {
+            StartCoroutine(WaitBeforeMoving());
+        }
+    }
+
+    private void MoveToNextWaypoint()
+    {
+        if (waypoints.Length == 0)
+            return;
+
+        agent.SetDestination(waypoints[currentWaypointIndex].position);
+        animator.SetBool("isMoving", true);
+        animator.Play("Walk Forward");
+
+        currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
+    }
+
+
+    private IEnumerator WaitBeforeMoving()
+    {
+        isWaiting = true;
+        animator.SetBool("isMoving", false);
+        animator.Play("Idle");
+
+        yield return new WaitForSeconds(waitTime);
+
+        MoveToNextWaypoint();
+        isWaiting = false;
+    }
+
+
+    private void Patroling()
+    {
+        if (!walkPointSet) SearchWalkPoint();
+
+        if (walkPointSet)
+            agent.SetDestination(waypoints[currentWaypointIndex].position);
+
+        Vector3 distanceToWalkPoint = transform.position - waypoints[currentWaypointIndex].position;
+
+        // Walkpoint reached
+        if (distanceToWalkPoint.magnitude < 1f)
+        {
+            walkPointSet = false;
+            MoveToNextWaypoint();
+        }
+    }
+
+    private void SearchWalkPoint()
+    {
+        walkPointSet = true;
+    }
+
+
+
+    private void ChasePlayer()
+    {
+        agent.speed = chaseSpeed; //add in video
+        agent.SetDestination(player.position);
+        animator.SetBool("isMoving", true);
+        animator.Play("RunForward");
+    }
+
+    private void AttackPlayer()
+    {
+        // Make sure bear doesn't move
+        agent.SetDestination(transform.position);
+        animator.SetBool("isMoving", true);
+
+        transform.LookAt(player);
+
+        if (!alreadyAttacked)
+        {
+            // Play a random attack animation
+            int attackIndex = Random.Range(1, 4); // Assuming you have Bear_Attack1, Bear_Attack2, Bear_Attack3
+            animator.Play("Attack" + attackIndex);
+
+            // Implement melee attack to player here (e.g., apply damage)
+
+            alreadyAttacked = true;
+            Invoke(nameof(ResetAttack), timeBetweenAttacks);
+        }
+    }
+    private void ResetAttack()
+    {
+        alreadyAttacked = false;
+    }
+
+
+    public void TakeDamage(int damage)
+    {
+        health -= damage;
+        animator.Play("Bear_GetHitFromFront");
+
+        if (health <= 0) Invoke(nameof(DestroyBear), 0.5f);
+    }
+
+    private void DestroyBear()
+    {
+        animator.Play("Death");
+        Destroy(gameObject, 2f); // Delay to allow death animation to play
+    }
+
+}
+```
 hello my name is abdul rehman and i am the developer of this unity game project so i wanted to say i have to complete this project as soon as possible that is my mission so if you want to do any commnet related to me so you can do by direct message me or by via email. So what you are waiting for go and just do it, duw na pia tu phir kia jiya , life is too short so dont waste on irrelent thing! got my point! .Manta hu phir! :) Manna pahra ga. just joking
