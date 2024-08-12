@@ -1461,4 +1461,174 @@ public class AnimalsAi : MonoBehaviour
 
 }
 ```
+![image](https://github.com/user-attachments/assets/16366a49-386a-469c-b2fa-ff842ea3bfa3)
+
+![image](https://github.com/user-attachments/assets/39c10ab0-b689-4b16-8857-99b19e3a4fa1)
+
+![image](https://github.com/user-attachments/assets/d1b9b84b-9be9-4255-9237-e172a960a130)
+
+![image](https://github.com/user-attachments/assets/39dda12a-eec3-4893-a00c-142c0ba472d7)
+
+![image](https://github.com/user-attachments/assets/a4ce8325-47a1-44a5-a70d-398e064290eb)
+
+# Update Scripts
+Player Movements - Adding Player Animation while Moving, while Running ,Remove Idle and Learning About Scripts
+```
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Numerics;
+using Unity.Mathematics;
+using Unity.VisualScripting;
+using UnityEngine;
+
+public class PlayerMovement : MonoBehaviour
+{
+    [Header("Player Movement & Gravity")]
+    public float movementSpeed = 5f;
+
+    public float movementFastSpeed = 12f; //Add this line
+
+
+    public float jumpForce = 1f;
+    private CharacterController controller;
+
+    public float gravity = -9.81f;
+    
+    public Transform groundCheck;
+
+    public LayerMask groundMask;
+
+    public float groundDistance = 0.4f;
+
+    private bool isGrounded;
+    
+    private UnityEngine.Vector3 velocity;
+
+    [Header("Audio Foot Steps")]
+    public AudioSource leftFootAudioScource;
+    public AudioSource rightFootAudioScource;
+    public AudioClip[] footstepSounds;
+    public float footstepInterval = 0.5f;
+
+    public float nextFootstepTime;
+
+    private bool isLeftFootstep = true;
+
+    public float currentSpeed; // you can also create a varaible outside 
+
+    [Header("Player Animation of Movement")]
+    public Animator animator;
+
+    private bool isWalking = false; // by defalut the walking of player is not active
+    private bool isRunning = false; // to track if the player is running
+
+
+
+    void Start()
+    {
+        controller = GetComponent<CharacterController>();
+    }
+
+    void Update()
+    {
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+
+        if(isGrounded && velocity.y < 0)
+        {
+            velocity.y = -2f;
+        }
+        HandleMovement();
+        HandleGravity();
+
+        //handle Footsteps
+        if(isGrounded && controller.velocity.magnitude > 0.1f && Time.time >= nextFootstepTime)
+        {
+            PlayerFootstepSound();
+            nextFootstepTime = Time.time + footstepInterval;
+        }
+
+        // handle jump
+        if(Input.GetButtonDown("Jump") && isGrounded)
+        {
+            velocity.y = Mathf.Sqrt(jumpForce * -2 * gravity);
+        }
+
+        controller.Move( velocity * Time.deltaTime);
+    }
+
+    private void HandleMovement()
+    {
+        float horizontalInput = Input.GetAxis("Horizontal");
+        float verticalInput = Input.GetAxis("Vertical");
+        UnityEngine.Vector3 movement = transform.right * horizontalInput + transform.forward * verticalInput;
+
+        // Determine current speed based on whether the player is running
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            currentSpeed = movementFastSpeed;
+            isRunning = true;
+            isWalking = false;
+        }
+        else
+        {
+            currentSpeed = movementSpeed;
+            isRunning = false;
+            isWalking = true;
+        }
+
+        // Set the appropriate animations
+        if(movement.magnitude > 0.1f) // Player is moving
+        {
+            if(isRunning)
+            {
+                animator.SetTrigger("Run");
+                animator.ResetTrigger("Walk");
+            }
+            else
+            {
+                animator.SetTrigger("Walk");
+                animator.ResetTrigger("Run");
+                isWalking = true;
+            }
+        }
+        else // Player is idle
+        {
+            animator.ResetTrigger("Walk");
+            animator.ResetTrigger("Run");
+            isWalking = false;
+            isRunning = false;
+        }
+
+        // Calculate movement direction and apply movement
+        movement.y = 0;
+        controller.Move(movement * currentSpeed * Time.deltaTime);
+    }
+
+    void HandleGravity(){
+        velocity.y += gravity * Time.deltaTime;
+    }
+
+    void PlayerFootstepSound(){
+        AudioClip footstepClip = footstepSounds[UnityEngine.Random.Range(0,footstepSounds.Length)];
+
+        if(isLeftFootstep)
+        {
+            leftFootAudioScource.PlayOneShot(footstepClip);
+        }
+        else
+        {
+            rightFootAudioScource.PlayOneShot(footstepClip);
+        }
+
+        isLeftFootstep = !isLeftFootstep;
+    }
+    
+
+    
+}
+
+```
+
+
 hello my name is abdul rehman and i am the developer of this unity game project so i wanted to say i have to complete this project as soon as possible that is my mission so if you want to do any commnet related to me so you can do by direct message me or by via email. So what you are waiting for go and just do it, duw na pia tu phir kia jiya , life is too short so dont waste on irrelent thing! got my point! .Manta hu phir! :) Manna pahra ga. just joking
