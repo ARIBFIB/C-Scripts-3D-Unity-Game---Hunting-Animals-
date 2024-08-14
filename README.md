@@ -1685,7 +1685,92 @@ if(Input.GetButton("Fire1") && Time.time >= nextFireTime)
     }
 
 ```
-# Add the Script in Unity - BulletProjectile.cs
+# Adding Projectile Script in Uniy - ShootingController.cs - (Concept)
+```
+    [Header("Mouse Aim Shooting")]
+
+    public Camera cam;
+    public GameObject projectile;
+    public Transform LHFirePoint, RHFirePoint;
+
+    public float projectileSpeed = 30;
+    private Vector3  destination;
+    private bool leftHand;
+
+
+void Update()
+{
+    if(isReloading) // when reloading occur its retrun to reloading function will ture
+            return;
+        if(isAuto == true) // Press left click to fire 
+        {
+            if(Input.GetButton("Fire1") && Time.time >= nextFireTime)
+            {
+                nextFireTime = Time.time + 1f / fireRate;
+                Shoot();
+----------------ShootProjectile();
+            }
+            else
+            {
+                animator.SetBool("Shoot", false);
+            }
+
+        }
+        else
+        { // to do fire same functonality by pressing the button fire active and shoot function call
+            if(Input.GetButtonDown("Fire1") && Time.time >= nextFireTime)
+            {
+                nextFireTime = Time.time + 1f / fireRate;
+                Shoot();
+----------------ShootProjectile();
+            }
+            else
+            {
+                animator.SetBool("Shoot", false);
+            }
+        }
+            //Mannual Reload by pressing R button
+        if(Input.GetKeyDown(KeyCode.R) && currentAmmo < maxAmmo)
+        {
+            Reload();
+        }
+}
+// Add below function
+void ShootProjectile()
+    {
+        Ray ray = cam.ViewportPointToRay(new Vector3(0.5f,0.5f,0));
+        RaycastHit hit;
+
+        if(Physics.Raycast(ray, out hit))
+        {
+            destination = hit.point;
+        }
+        else
+        {
+            destination = ray.GetPoint(1000);
+        }
+        
+        if(leftHand)
+        {
+            leftHand = false;
+            InstantiateProjectile(LHFirePoint);
+        }
+        else
+        {
+            leftHand = true;
+            InstantiateProjectile(RHFirePoint);
+        }
+
+    }
+    void InstantiateProjectile(Transform firePoint)
+    {
+        var projectileObj = Instantiate (projectile, firePoint.position, Quaternion.identity) as GameObject;
+        projectileObj.GetComponent<Rigidbody>().velocity = (destination - firePoint.position).normalized * projectileSpeed;
+    }
+
+
+```
+# Add the Script in Unity - BulletProjectile.cs - This Script is Invalid but if you understand you can use it by your own risk :) hhahahaah jusk joking. (:
 ```
 using System.Collections;
 using System.Collections.Generic;
