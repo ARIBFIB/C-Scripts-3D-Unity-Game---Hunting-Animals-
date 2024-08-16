@@ -2192,5 +2192,280 @@ public class PlayerMovement : MonoBehaviour
 }
 
 ```
+# ######################UPDATE ALL CODE Augest 18 2024 :) ####################
+
+# Shooting Controller.cs
+```
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using Unity.Mathematics;
+using Unity.VisualScripting;
+using UnityEngine;
+
+public class ShootingController : MonoBehaviour
+{
+    public Animator animator;
+    public Transform firePoint;
+    public float fireRate = 0.1f;
+    public float fireRange = 10f;
+    private float nextFireTime = 0f;
+
+    public bool isAuto = false;
+    public int maxAmmo = 30;
+
+    private int currentAmmo; //when the ammo is full or your current ammo 
+
+    public float reloadTime = 1.5f; //the time when pressing the R button the reloading time is 1.5seconds
+
+    private bool isReloading = false; //by default the reloading the gun is not active
+
+    public ParticleSystem muzzleFlash;
+
+    [Header("Sound Effects")]
+    public AudioSource soundAudioSource;
+    public AudioClip shootingSoundClip;
+    public AudioClip reloadSoundClip;
+
+    // [Header("Mouse Aim Shooting")]
+
+    // public Camera cam;
+    // public GameObject projectile;
+    // public Transform LHFirePoint, RHFirePoint;
+
+    // public float projectileSpeed = 30;
+    // private Vector3  destination;
+    // private bool leftHand;
+
+    [Header("Firing Raycast")]
+    RayCastWeapon weapon;
+    
+
+
+    // [SerializeField] private LayerMask aimColliderLayerMask = new LayerMask();
+    // [SerializeField] private Transform debugTransform;
+
+
+
+    void Start()
+    {
+        currentAmmo = maxAmmo; //start mathods update the current ammo
+        weapon = GetComponentInChildren<RayCastWeapon>(); 
+    }
+
+    void Update()
+    {
+        if(isReloading) // when reloading occur its retrun to reloading function will ture
+            return;
+        if(isAuto == true) // Press left click to fire 
+        {
+            if(Input.GetButton("Fire1") && Time.time >= nextFireTime)
+            {
+                nextFireTime = Time.time + 1f / fireRate;
+                Shoot();
+                // ShootProjectile();
+                weapon.StartFiring(); 
+            }
+            else
+            {
+                animator.SetBool("Shoot", false);
+                weapon.StopFiring();
+            }
+
+        }
+        else
+        { // to do fire same functonality by pressing the button fire active and shoot function call
+            if(Input.GetButtonDown("Fire1") && Time.time >= nextFireTime)
+            {
+                nextFireTime = Time.time + 1f / fireRate;
+                Shoot();
+                // ShootProjectile();
+                weapon.StartFiring(); 
+            }
+            else
+            {
+                animator.SetBool("Shoot", false);
+                weapon.StopFiring();
+            }
+        }
+        //Mannual Reload by pressing R button
+        if(Input.GetKeyDown(KeyCode.R) && currentAmmo < maxAmmo)
+        {
+            Reload();
+        }
+        // // for mouse when the mouse moves our curser also emit the light
+        // Vector2 sceenCenterPoint = new Vector2(Screen.width / 2f, Screen.height / 2f);
+        // Ray ray = Camera.main.ScreenPointToRay(sceenCenterPoint);
+        // if(Physics.Raycast(ray, out RaycastHit raycastHit, 999f , aimColliderLayerMask))
+        // {
+        //     debugTransform.position = raycastHit.point;
+        // }
+    }
+
+    // void ShootProjectile()
+    // {
+    //     Ray ray = cam.ViewportPointToRay(new Vector3(0.5f,0.5f,0));
+    //     RaycastHit hit;
+
+    //     if(Physics.Raycast(ray, out hit))
+    //     {
+    //         destination = hit.point;
+    //     }
+    //     else
+    //     {
+    //         destination = ray.GetPoint(1000);
+    //     }
+        
+    //     if(leftHand)
+    //     {
+    //         leftHand = false;
+    //         InstantiateProjectile(LHFirePoint);
+    //     }
+    //     else
+    //     {
+    //         leftHand = true;
+    //         InstantiateProjectile(RHFirePoint);
+    //     }
+
+    // }
+
+    // void InstantiateProjectile(Transform firePoint)
+    // {
+    //     // GameObject projectile = GameObject.FindWithTag("Bullet");
+    //     var projectileObj = Instantiate (projectile, firePoint.position, Quaternion.identity) as GameObject;
+    //     if (projectileObj != null)
+    //     {
+    //         projectileObj.GetComponent<Rigidbody>().velocity = (destination - firePoint.position).normalized * projectileSpeed;
+    //         Destroy(projectileObj, 10f);
+    //     }
+
+    
+    //     //iTween
+    //     // iTween.PunchPosition(projectileObj, new Vector3 (UnityEngine.Random.Range(-arcRange, arcRange), UnityEngine.Random.Range(-arcRange, arcRange), 0), UnityEngine.Random.Range(0.5f, 2));
+    // }
+
+    private void Shoot(){
+        // its a range where the fire can exist , can be change later to increase and decrease
+        if(currentAmmo > 0)
+        {
+            RaycastHit hit;
+            if(Physics.Raycast(firePoint.position, firePoint.forward, out hit, fireRange))
+            {
+                Debug.Log(hit.transform.name);
+                //apply damage to animal
+            }
+            //add this below line code
+            muzzleFlash.Play();
+            animator.SetBool("Shoot", true);
+            currentAmmo--; //decrement of ammo
+
+            soundAudioSource.PlayOneShot(shootingSoundClip);
+
+        }
+        else
+        {
+            //reload function call
+            Reload();
+        }
+    }
+    private void Reload()
+    {
+        if(!isReloading && currentAmmo < maxAmmo)
+        {
+            //reload anim
+            animator.SetTrigger("Reload");
+
+            isReloading = true;
+            //play reload sound
+            soundAudioSource.PlayOneShot(reloadSoundClip);
+            Invoke("FinishReloading", reloadTime);
+
+        }
+    }
+    private void FinishReloading()
+    {
+        currentAmmo = maxAmmo;
+        isReloading = false;
+        //reset reload animation
+        animator.ResetTrigger("Reload");
+    }
+}
+
+```
+# RayCastWeapon.cs - New
+```
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class RayCastWeapon : MonoBehaviour
+{
+    public bool isFiring = false;
+    public Transform raycastOrigin;
+    Ray ray;
+    RaycastHit hitInfo;
+    public void StartFiring()
+    {
+        isFiring = true;
+        PerformRaycast();
+    }
+
+
+    public void StopFiring()
+    {
+        isFiring = false;
+    }
+
+    public void PerformRaycast()
+    {
+        if (raycastOrigin == null)
+        {
+            Debug.LogError("Raycast origin is not set!");
+            return;
+        }
+
+        ray.origin = raycastOrigin.position;
+        ray.direction = raycastOrigin.forward;
+
+        if (Physics.Raycast(ray, out hitInfo))
+        {
+            Debug.DrawLine(ray.origin, hitInfo.point, Color.gray, 1.0f);
+        }
+    }
+}
+
+```
+# CrossHairTarget.cs - new
+```
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CrossHairTarget : MonoBehaviour
+{
+    Camera mainCamera;
+    Ray ray;
+    RaycastHit hitInfo;
+    public float maxDistance = 1000;
+    void Start()
+    {
+        mainCamera = Camera.main;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        ray.origin = mainCamera.transform.position;
+        ray.direction = mainCamera.transform.forward;
+        if(Physics.Raycast(ray, out hitInfo, maxDistance))
+        transform.position = hitInfo.point;
+        
+        
+    }
+}
+
+```
+
+
 
 hello my name is abdul rehman and i am the developer of this unity game project so i wanted to say i have to complete this project as soon as possible that is my mission so if you want to do any commnet related to me so you can do by direct message me or by via email. So what you are waiting for go and just do it, duw na pia tu phir kia jiya , life is too short so dont waste on irrelent thing! got my point! .Manta hu phir! :) Manna pahra ga. just joking
